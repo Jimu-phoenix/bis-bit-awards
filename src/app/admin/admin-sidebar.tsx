@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { AdminThemeToggle } from "./_components/theme-toggle";
+import { VotingToggle } from "./_components/voting-toggle";
 
 const ITEMS: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/admin", label: "Vote Counts", icon: BarChart3 },
@@ -24,7 +25,7 @@ const ITEMS: Array<{ href: string; label: string; icon: LucideIcon }> = [
   { href: "/admin/logs", label: "Logs", icon: ScrollText },
 ];
 
-export function AdminSidebar() {
+export function AdminSidebar({ votingOpen }: { votingOpen: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
 
@@ -71,7 +72,8 @@ export function AdminSidebar() {
         </nav>
 
         <div className="flex flex-col gap-3 border-t border-admin-border p-4">
-          <div className="flex items-center justify-between gap-3">
+          <VotingToggle votingOpen={votingOpen} />
+          <div className="flex items-center justify-between gap-3 border-t border-admin-border pt-3">
             <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-admin-muted">
               Theme
             </span>
@@ -106,6 +108,9 @@ export function AdminSidebar() {
             </span>
           </div>
           <AdminThemeToggle />
+        </div>
+        <div className="border-t border-admin-border px-5 py-4">
+          <VotingToggle votingOpen={votingOpen} />
         </div>
         <nav className="flex gap-2 overflow-x-auto px-5 pb-4">
           {ITEMS.map(({ href, label, icon: Icon }) => (

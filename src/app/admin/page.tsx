@@ -1,8 +1,12 @@
 import { getPool } from "@/lib/db";
+import { getVotingOpen } from "@/lib/voting";
+import { BarChart } from "./_components/bar-chart";
+import { PrintWinnerButton } from "./_components/print-winner";
 import { SectionHeader } from "./_components/ui";
 
 export default async function AdminOverviewPage() {
   const pool = getPool();
+  const votingOpen = await getVotingOpen();
 
   const { rows: stats } = await pool.query<{
     votes: number;
@@ -55,7 +59,7 @@ export default async function AdminOverviewPage() {
       n.name as nominee_name,
       v.created_at as voted_at
     FROM votes v
-    JOIN neon_auth.user u ON u.id::text = v.user_id
+    JOIN users u ON u.id = v.user_id
     JOIN nominees n ON n.id = v.nominee_id
     JOIN categories c ON c.id = n.category_id
     ORDER BY v.created_at DESC
@@ -80,41 +84,44 @@ export default async function AdminOverviewPage() {
       </div>
 
       <h2 className="mb-4 font-mono text-xs uppercase tracking-[0.3em] text-admin-muted">
-        Totals per Category
+        Charts by Category
       </h2>
-      <div className="mb-12 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mb-12 grid gap-4 md:grid-cols-2">
         {totals.map((category) => {
-          const categoryTotal = (category.nominees ?? []).reduce((sum, n) => sum + n.votes, 0);
+          const votes = category.nominees ?? [];
+          const max = votes.reduce((m, n) => Math.max(m, n.votes), 0);
+          const winners = max > 0 ? votes.filter((n) => n.votes === max) : [];
+          const winner = winners[0];
+          const isTie = winners.length > 1;
+
           return (
             <div key={category.category_id} className="border border-admin-border bg-admin-panel p-6">
-              <div className="mb-4 flex items-baseline justify-between gap-3">
-                <h3 className="text-lg font-black uppercase leading-tight tracking-tight text-admin-fg">
-                  {category.title}
-                </h3>
-                <span className="font-mono text-xs text-admin-muted">{categoryTotal}</span>
+              <div className="mb-4 flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-lg font-black uppercase leading-tight tracking-tight text-admin-fg">
+                    {category.title}
+                  </h3>
+                  {winner && (
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.2em] text-admin-accent">
+                      {isTie ? "Tie" : "Winner"} · {winner.name}
+                    </p>
+                  )}
+                </div>
+                <PrintWinnerButton
+                  categoryTitle={category.title}
+                  winnerName={winner?.name ?? ""}
+                  votingOpen={votingOpen}
+                  isTie={isTie}
+                  disabled={!winner}
+                />
               </div>
-              <ul className="space-y-3">
-                {(category.nominees ?? []).map((nominee) => {
-                  const share = categoryTotal === 0 ? 0 : (nominee.votes / categoryTotal) * 100;
-                  return (
-                    <li key={nominee.id}>
-                      <div className="mb-1 flex items-center justify-between text-sm">
-                        <span className="text-admin-fg/80">{nominee.name}</span>
-                        <span className="font-mono text-admin-accent">{nominee.votes}</span>
-                      </div>
-                      <div className="h-1 w-full bg-admin-hover">
-                        <div
-                          className="h-full bg-admin-accent"
-                          style={{ width: `${share}%` }}
-                        />
-                      </div>
-                    </li>
-                  );
-                })}
-                {(category.nominees ?? []).length === 0 && (
-                  <li className="text-sm text-admin-muted">No nominees yet.</li>
-                )}
-              </ul>
+              <BarChart
+                data={votes.map((nominee) => ({
+                  id: nominee.id,
+                  label: nominee.name,
+                  votes: nominee.votes,
+                }))}
+              />
             </div>
           );
         })}

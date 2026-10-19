@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   motion,
   useMotionValueEvent,
@@ -27,6 +28,7 @@ const LINKS = [
 ];
 
 export default function Nav() {
+  const router = useRouter();
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -47,6 +49,8 @@ export default function Nav() {
 
   const handleSignOut = async () => {
     await authClient.signOut();
+    router.push("/");
+    router.refresh();
   };
 
   return (
@@ -111,7 +115,7 @@ export default function Nav() {
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="hidden md:inline-flex gap-1.5 text-white/70 hover:text-white"
+                className="hidden gap-1.5 rounded-none text-white/70 hover:bg-white hover:text-black md:inline-flex"
               >
                 <LogOut className="size-3.5" />
                 <span className="font-mono text-xs uppercase tracking-[0.2em]">Logout</span>

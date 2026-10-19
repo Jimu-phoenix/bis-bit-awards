@@ -1,10 +1,15 @@
 import { getSession } from "@/lib/auth-server";
 import { getPool } from "@/lib/db";
+import { getVotingOpen } from "@/lib/voting";
 
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session?.user) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  if (!(await getVotingOpen())) {
+    return new Response("Voting period is closed", { status: 403 });
   }
 
   const { nomineeId, categoryId } = await req.json();

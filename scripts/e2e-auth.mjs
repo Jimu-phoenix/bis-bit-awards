@@ -60,9 +60,9 @@ async function main() {
   console.log(`test user: ${email}\n`);
 
   // Remove any strays left by crashed runs
-  await pool.query(`DELETE FROM votes WHERE user_id IN (SELECT id::text FROM neon_auth.user WHERE email LIKE 'bis21-test%@mubas.ac.mw' OR email LIKE 'bit22-test%@mubas.ac.mw')`);
+  await pool.query(`DELETE FROM votes WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'bis21-test%@mubas.ac.mw' OR email LIKE 'bit22-test%@mubas.ac.mw')`);
   await pool.query(`DELETE FROM admins WHERE email LIKE 'bis21-test%@mubas.ac.mw' OR email LIKE 'bit22-test%@mubas.ac.mw'`);
-  await pool.query(`DELETE FROM neon_auth.user WHERE email LIKE 'bis21-test%@mubas.ac.mw' OR email LIKE 'bit22-test%@mubas.ac.mw'`);
+  await pool.query(`DELETE FROM users WHERE email LIKE 'bis21-test%@mubas.ac.mw' OR email LIKE 'bit22-test%@mubas.ac.mw'`);
 
   // 1. Sign-up with an invalid (non-MUBAS) email must be rejected
   {
@@ -104,8 +104,8 @@ async function main() {
       body: JSON.stringify(body),
     });
     if (res.status >= 400) {
-      // Neon Auth may require a name field
-      body = { ...body, name: "E2E Tester" };
+      // Fall back to sending an explicit full name
+      body = { ...body, fullname: "E2E Tester" };
       res = await fetch(`${BASE}/api/auth/sign-up`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,19 +116,19 @@ async function main() {
     check("sign-up accepts valid MUBAS email (200)", res.status === 200, `got ${res.status}: ${text.slice(0, 200)}`);
     jar = mergeCookies(jar, res.headers.getSetCookie());
     check(
-      "sign-up sets neon-auth session cookie",
-      [...jar.keys()].some((k) => k.includes("neon-auth")),
+      "sign-up sets session cookie",
+      [...jar.keys()].some((k) => k.includes("bit-bis.session")),
       `cookies: ${[...jar.keys()].join(", ")}`
     );
   }
 
   const auth = { Cookie: cookieHeader(jar) };
 
-  // 3. get-session returns the user
+  // 3. /api/session returns the user
   {
-    const res = await fetch(`${BASE}/api/auth/get-session`, { headers: auth });
+    const res = await fetch(`${BASE}/api/session`, { headers: auth });
     const data = await res.json();
-    check("get-session returns user", data?.user?.email === email, JSON.stringify(data).slice(0, 200));
+    check("/api/session returns user", data?.user?.email === email, JSON.stringify(data).slice(0, 200));
   }
 
   // 4. Middleware: /vote and /admin redirect when logged out, allow when logged in
@@ -196,7 +196,7 @@ async function main() {
   // 7. DB: exactly one vote per category for this user, latest nominee kept
   {
     const { rows } = await pool.query(
-      `SELECT category_id, nominee_id FROM votes WHERE user_id = (SELECT id::text FROM neon_auth.user WHERE email = $1) ORDER BY category_id`,
+      `SELECT category_id, nominee_id FROM votes WHERE user_id = (SELECT id FROM users WHERE email = $1) ORDER BY category_id`,
       [email]
     );
     check("user has exactly 2 vote rows (one per category)", rows.length === 2, `got ${rows.length}`);
@@ -230,7 +230,7 @@ async function main() {
   }
 
   // 11. Add the email to the admins table -> /admin renders
-  const userId = (await pool.query(`SELECT id FROM neon_auth.user WHERE email = $1`, [email])).rows[0]?.id;
+  const userId = (await pool.query(`SELECT id FROM users WHERE email = $1`, [email])).rows[0]?.id;
   {
     await pool.query(`INSERT INTO admins (email, fullname) VALUES ($1, $2)`, [email, "E2E Admin"]);
     const res = await fetch(`${BASE}/admin`, { headers: auth, redirect: "manual" });
@@ -247,7 +247,7 @@ async function main() {
     check("sign-out returns 200", res.status === 200, `got ${res.status}`);
     jar = mergeCookies(jar, res.headers.getSetCookie());
 
-    const after = await fetch(`${BASE}/api/auth/get-session`, {
+    const after = await fetch(`${BASE}/api/session`, {
       headers: { Cookie: cookieHeader(jar) },
     });
     const data = await after.json();
@@ -263,9 +263,9 @@ async function main() {
     await pool.query(`DELETE FROM votes WHERE user_id = $1`, [userId]);
     await pool.query(`DELETE FROM admins WHERE lower(email) = lower($1)`, [email]);
     await pool.query(`DELETE FROM admins WHERE email LIKE 'bit22-test%@mubas.ac.mw'`);
-    await pool.query(`DELETE FROM votes WHERE user_id IN (SELECT id::text FROM neon_auth.user WHERE email LIKE 'bit22-test%@mubas.ac.mw')`);
-    await pool.query(`DELETE FROM neon_auth.user WHERE email LIKE 'bit22-test%@mubas.ac.mw'`);
-    await pool.query(`DELETE FROM neon_auth.user WHERE id = $1`, [userId]);
+    await pool.query(`DELETE FROM votes WHERE user_id IN (SELECT id FROM users WHERE email LIKE 'bit22-test%@mubas.ac.mw')`);
+    await pool.query(`DELETE FROM users WHERE email LIKE 'bit22-test%@mubas.ac.mw'`);
+    await pool.query(`DELETE FROM users WHERE id = $1`, [userId]);
     console.log("\ncleanup: removed test votes, admin row, and user");
   } catch (e) {
     console.log(`\ncleanup warning: ${e.message}`);

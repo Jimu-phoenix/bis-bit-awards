@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { getPool } from "@/lib/db";
 import { requireAdminUser } from "@/lib/admin";
 import { logAdminAction } from "@/lib/audit";
+import { setVotingOpen } from "@/lib/voting";
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -219,6 +220,24 @@ export async function grantAdmin(formData: FormData) {
   await getPool().query("insert into admins (email, fullname) values ($1, $2)", [email, fullname]);
   await logAdminAction(user.email, "admin.grant", `Granted dashboard access to ${email}`);
   done("/admin/users", `${email} can now access the dashboard`);
+}
+
+export async function toggleVoting(formData: FormData) {
+  const user = await requireAdminUser();
+  const open = text(formData, "open") === "true";
+  const requestedPath = text(formData, "path");
+  const path =
+    requestedPath.startsWith("/admin") && !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/admin";
+
+  await setVotingOpen(open, user.email);
+  await logAdminAction(
+    user.email,
+    open ? "voting.open" : "voting.close",
+    open ? "Voting period opened" : "Voting period closed"
+  );
+  done(path, open ? "Voting is now active" : "Voting period closed");
 }
 
 export async function revokeAdmin(formData: FormData) {

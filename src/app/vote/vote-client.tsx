@@ -13,6 +13,7 @@ import {
   Shirt,
   Sparkles,
   Award,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 
@@ -41,9 +42,10 @@ interface VoteTotals {
   }>;
 }
 
-export function VoteClient() {
+export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }) {
   const [categories, setCategories] = useState<VoteTotals[]>([]);
   const [userVotes, setUserVotes] = useState<Record<string, string>>({});
+  const [votingOpen, setVotingOpen] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -52,42 +54,60 @@ export function VoteClient() {
   useEffect(() => {
     let active = true;
 
-    fetch("/api/vote/totals")
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch vote totals");
-        return res.json();
-      })
-      .then((data: VoteTotals[]) => {
-        if (active) setCategories(data);
-      })
-      .catch(() => {
-        if (active) setError("Failed to load vote totals");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
+    const load = async () => {
+      try {
+        const statusRes = await fetch("/api/vote/status");
+        if (!statusRes.ok) throw new Error("Failed to fetch voting status");
+        const status: { open: boolean } = await statusRes.json();
+        if (!active) return;
 
-    fetch("/api/vote/user")
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data: Array<{ category_id: string; nominee_id: string }> | null) => {
-        if (!active || !data) return;
-        const votesMap: Record<string, string> = {};
-        data.forEach((v) => {
-          votesMap[v.category_id] = v.nominee_id;
-        });
-        setUserVotes(votesMap);
-      })
-      .catch(() => {
-        // User votes not available (not logged in or error)
-      });
+        setVotingOpen(status.open);
+        if (!status.open) {
+          setLoading(false);
+          return;
+        }
+
+        const [totalsRes, userRes] = await Promise.all([
+          fetch("/api/vote/totals"),
+          fetch("/api/vote/user"),
+        ]);
+        if (!active) return;
+        if (!totalsRes.ok) throw new Error("Failed to fetch vote totals");
+
+        const data: VoteTotals[] = await totalsRes.json();
+        if (!active) return;
+        setCategories(data);
+
+        if (userRes.ok) {
+          const userData: Array<{ category_id: string; nominee_id: string }> | null =
+            await userRes.json();
+          if (!active || !userData) return;
+          const votesMap: Record<string, string> = {};
+          userData.forEach((v) => {
+            votesMap[v.category_id] = v.nominee_id;
+          });
+          setUserVotes(votesMap);
+        }
+      } catch {
+        if (active) setError("Failed to load vote totals");
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void load();
 
     return () => {
       active = false;
     };
-  }, []);
+  }, [sessionKey]);
 
   const handleVote = async (categoryId: string, nomineeId: string) => {
     if (voting[categoryId]) return;
+    if (votingOpen === false) {
+      showToast("Voting period is closed", "error");
+      return;
+    }
 
     setVoting((prev) => ({ ...prev, [categoryId]: true }));
     setError(null);
@@ -167,6 +187,46 @@ export function VoteClient() {
     );
   }
 
+  if (votingOpen === false) {
+    return (
+      <main className="relative min-h-screen overflow-x-clip bg-[#05060a] text-white selection:bg-emerald-300 selection:text-black">
+        <div
+          aria-hidden
+          className="pointer-events-none fixed inset-0 -z-10 opacity-[0.16]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px)",
+            backgroundSize: "72px 72px",
+            maskImage: "radial-gradient(ellipse at 50% 30%, black 20%, transparent 75%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse at 50% 30%, black 20%, transparent 75%)",
+          }}
+        />
+        <Nav />
+        <section className="mx-auto max-w-6xl px-6 pt-36 pb-24 md:pt-44">
+          <p className="font-mono text-xs uppercase tracking-[0.3em] text-fuchsia-300">/ Vote</p>
+          <h1 className="mt-3 text-5xl font-black uppercase leading-[0.9] tracking-tighter text-white md:text-8xl">
+            Voting period <span className="text-fuchsia-300">closed.</span>
+          </h1>
+          <p className="mt-6 max-w-xl text-white/60">
+            Ballots are locked for now. Winners are revealed on the day — check back when the
+            voting period reopens.
+          </p>
+          <div className="mt-10 inline-flex items-center gap-3 border border-fuchsia-400/40 bg-fuchsia-400/5 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] text-fuchsia-300">
+            <Lock className="size-4" />
+            Voting period closed
+          </div>
+        </section>
+        <footer className="border-t border-white/10 px-6 py-10">
+          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 md:flex-row">
+            <span>Finale Awards · BIS / BIT Class of 2026</span>
+            <span>Vote · production branch</span>
+          </div>
+        </footer>
+      </main>
+    );
+  }
+
   return (
     <main className="relative min-h-screen overflow-x-clip bg-[#05060a] text-white selection:bg-emerald-300 selection:text-black">
       <div
@@ -193,8 +253,8 @@ export function VoteClient() {
           Cast your <span className="text-emerald-300">votes.</span>
         </h1>
         <p className="mt-6 max-w-xl text-white/60">
-          One class, one ballot. Pick one name per category \u2014 tallies below are
-          read live from the database.
+          One class, one ballot. Pick one name per category. Tallies stay hidden until the voting
+          period closes.
         </p>
 
         {error && (
@@ -272,9 +332,6 @@ export function VoteClient() {
                             )}
                           </div>
                           <div className="flex items-center gap-3">
-                            <span className="shrink-0 border border-white/15 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-emerald-300">
-                              {nominee.votes} vote{nominee.votes === 1 ? "" : "s"}
-                            </span>
                             {userVotes[category.category_id] ? (
                               <span className="shrink-0 px-3 py-1 font-mono text-xs uppercase tracking-[0.2em] text-emerald-300 bg-emerald-300/10 border border-emerald-300/20">
                                 Voted

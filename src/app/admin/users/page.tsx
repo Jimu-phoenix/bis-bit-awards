@@ -26,11 +26,11 @@ export default async function AdminUsersPage({
   );
 
   const { rows: users } = await pool.query<UserRow>(`
-    SELECT u.id, u.email, u."createdAt" as created_at,
+    SELECT u.id, u.email, u.created_at as created_at,
            CASE WHEN a.id IS NOT NULL THEN 'admin' ELSE 'student' END as role
-    FROM neon_auth.user u
+    FROM users u
     LEFT JOIN admins a ON lower(trim(a.email)) = lower(u.email)
-    ORDER BY u."createdAt" DESC
+    ORDER BY u.created_at DESC
   `);
 
   return (

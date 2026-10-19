@@ -40,31 +40,61 @@ try {
   // Check current schema and apply migrations
   console.log("Checking current schema...");
 
-  // Add missing columns to votes table
+  // --- Custom auth: users + sessions (replaces Neon Auth) ---------------------
+  await withRetry(() => client.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      email text NOT NULL UNIQUE,
+      fullname text NOT NULL DEFAULT '',
+      password_hash text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now()
+    )
+  `));
+  await withRetry(() => client.query(`
+    CREATE INDEX IF NOT EXISTS users_email_lower_idx ON users (lower(email))
+  `));
+  console.log("Created users table");
+
+  await withRetry(() => client.query(`
+    CREATE TABLE IF NOT EXISTS sessions (
+      id text PRIMARY KEY,
+      user_id bigint NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      expires_at timestamptz NOT NULL
+    )
+  `));
+  await withRetry(() => client.query(`
+    CREATE INDEX IF NOT EXISTS sessions_user_id_idx ON sessions (user_id)
+  `));
+  await withRetry(() => client.query(`
+    CREATE INDEX IF NOT EXISTS sessions_expires_at_idx ON sessions (expires_at)
+  `));
+  console.log("Created sessions table");
+
+  // votes.user_id used to be a text id pointing at neon_auth.user. It is now a
+  // bigint referencing users. Since Neon Auth is being removed, clear ballots
+  // and convert the column type if it is still text.
   const votesColumns = await client.query(`
-    SELECT column_name FROM information_schema.columns 
+    SELECT column_name, data_type FROM information_schema.columns
     WHERE table_name = 'votes'
   `);
-  const colNames = new Set(votesColumns.rows.map(r => r.column_name));
+  const colTypes = new Map(votesColumns.rows.map((r) => [r.column_name, r.data_type]));
 
-  if (!colNames.has('user_id')) {
-    await withRetry(() => client.query(`ALTER TABLE votes ADD COLUMN user_id text`));
-    console.log("Added user_id column to votes");
+  if (colTypes.get("user_id") === "text") {
+    await withRetry(() => client.query(`DELETE FROM votes`));
+    await withRetry(() => client.query(`ALTER TABLE votes DROP COLUMN user_id`));
+    await withRetry(() => client.query(`ALTER TABLE votes ADD COLUMN user_id bigint`));
+    console.log("Converted votes.user_id from text to bigint (cleared ballots)");
   }
-  if (!colNames.has('category_id')) {
+  if (!colTypes.has("category_id")) {
     await withRetry(() => client.query(`ALTER TABLE votes ADD COLUMN category_id bigint`));
     console.log("Added category_id column to votes");
   }
 
-  // Create user_roles table
-  await withRetry(() => client.query(`
-    CREATE TABLE IF NOT EXISTS user_roles (
-      user_id text PRIMARY KEY,
-      role text NOT NULL DEFAULT 'student' CHECK (role IN ('student', 'admin')),
-      created_at timestamptz NOT NULL DEFAULT now()
-    )
-  `));
-  console.log("Created user_roles table");
+  // Retire the unused user_roles table and the Neon Auth schema.
+  await withRetry(() => client.query(`DROP TABLE IF EXISTS user_roles`));
+  await withRetry(() => client.query(`DROP SCHEMA IF EXISTS neon_auth CASCADE`));
+  console.log("Dropped user_roles and neon_auth schema");
 
   // Create admins table (dashboard access is granted by email)
   await withRetry(() => client.query(`
@@ -91,6 +121,21 @@ try {
   `));
   console.log("Created system_logs table");
 
+  // Single-row toggle for the public voting period (on by default)
+  await withRetry(() => client.query(`
+    CREATE TABLE IF NOT EXISTS voting_settings (
+      id smallint PRIMARY KEY CHECK (id = 1),
+      voting_open boolean NOT NULL DEFAULT true,
+      updated_at timestamptz NOT NULL DEFAULT now(),
+      updated_by text NOT NULL DEFAULT ''
+    )
+  `));
+  await withRetry(() => client.query(`
+    INSERT INTO voting_settings (id, voting_open) VALUES (1, true)
+    ON CONFLICT (id) DO NOTHING
+  `));
+  console.log("Created voting_settings table");
+
   // Add indexes
   await withRetry(() => client.query(`
     CREATE INDEX IF NOT EXISTS votes_user_id_idx ON votes (user_id)
@@ -105,6 +150,17 @@ try {
       ALTER TABLE votes 
       ADD CONSTRAINT votes_category_id_fkey 
       FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
+    `));
+  } catch {
+    // Constraint might already exist
+  }
+
+  // votes.user_id references users (id)
+  try {
+    await withRetry(() => client.query(`
+      ALTER TABLE votes
+      ADD CONSTRAINT votes_user_id_fkey
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
     `));
   } catch {
     // Constraint might already exist
@@ -178,7 +234,8 @@ try {
       (SELECT COUNT(*) FROM nominees) as nominees,
       (SELECT COUNT(*) FROM votes) as votes,
       (SELECT COUNT(*) FROM admins) as admins,
-      (SELECT COUNT(*) FROM system_logs) as system_logs
+      (SELECT COUNT(*) FROM system_logs) as system_logs,
+      (SELECT voting_open FROM voting_settings) as voting_open
   `);
   console.log("Counts:", JSON.stringify(counts.rows[0]));
 
