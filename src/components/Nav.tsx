@@ -23,8 +23,8 @@ import { authClient, useSession } from "@/lib/auth-client";
 
 const LINKS = [
   { label: "Vote", href: "/vote", icon: Vote },
-  { label: "Gallery", href: "#", icon: Images },
-  { label: "Team", href: "#", icon: Users },
+  { label: "Gallery", href: "/gallery", icon: Images },
+  { label: "Team", href: "/team", icon: Users },
 ];
 
 export default function Nav() {

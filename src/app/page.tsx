@@ -170,11 +170,13 @@ function Hero() {
   return (
     <section ref={ref} className="relative h-[140vh]">
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6">
-        {/* Giant outlined year that slides sideways as you scroll */}
+        {/* Giant outlined year that slides sideways as you scroll.
+            Mobile: vertical, centred, filling the screen.
+            md+: upright, left-aligned, huge. */}
         <motion.span
           aria-hidden
           style={{ x: yearX, opacity: yearOpacity, WebkitTextStroke: "1px rgba(255,255,255,0.18)" }}
-          className="pointer-events-none absolute left-[6vw] top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[34vw] font-black leading-none tracking-tighter text-transparent"
+          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[25vh] font-black leading-none tracking-tighter text-transparent [writing-mode:vertical-rl] md:left-[6vw] md:translate-x-0 md:text-[34vw] md:[writing-mode:horizontal-tb]"
         >
           2026
         </motion.span>
@@ -197,7 +199,7 @@ function Hero() {
             </Badge>
           </motion.div> */}
 
-          <h1 className="mt-8 text-[clamp(3rem,10vw,10rem)] font-black uppercase leading-[0.85] tracking-tighter text-white">
+          <h1 className="mt-8 text-[clamp(4rem,13vw,10rem)] font-black uppercase leading-[0.85] tracking-tighter text-white md:text-[clamp(3rem,10vw,10rem)]">
             {["BIT/BIS","Finale", "Awards"].map((word, i) => (
               <span key={word} className="block overflow-hidden">
                 <motion.span
@@ -249,7 +251,7 @@ function Hero() {
             <Button
               size="lg"
               variant="outline"
-              render={<Link href="#" />}
+              render={<Link href="/gallery" />}
               className="gap-2 rounded-none border-white/25 bg-transparent px-8 font-mono text-xs uppercase tracking-[0.2em] text-white hover:bg-white/10 hover:text-white"
             >
               <Images className="size-4" />
@@ -522,8 +524,8 @@ function Steps() {
 
 const TILES = [
   { label: "Vote", sub: "Pick your winners", href: "/vote", icon: Vote },
-  { label: "Gallery", sub: "Four years in frames", href: "#", icon: Images },
-  { label: "Team", sub: "The crew behind it", href: "#", icon: Users },
+  { label: "Gallery", sub: "Four years in frames", href: "/gallery", icon: Images },
+  { label: "Team", sub: "The crew behind it", href: "/team", icon: Users },
 ];
 
 function Cta() {
@@ -591,8 +593,8 @@ function Footer() {
         <span>Finale Awards &middot; BIS / BIT Class of 2026</span>
         <div className="flex gap-6">
           <Link href="/vote" className="transition-colors hover:text-white">Vote</Link>
-          <Link href="#" className="transition-colors hover:text-white">Gallery</Link>
-          <Link href="#" className="transition-colors hover:text-white">Team</Link>
+          <Link href="/gallery" className="transition-colors hover:text-white">Gallery</Link>
+          <Link href="/team" className="transition-colors hover:text-white">Team</Link>
         </div>
       </div>
     </footer>
