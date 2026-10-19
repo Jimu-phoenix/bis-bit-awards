@@ -8,7 +8,7 @@ import {
   useScroll,
   useSpring,
 } from "framer-motion";
-import { Images, Menu, Trophy, Users, Vote } from "lucide-react";
+import { Images, LogOut, Menu, Trophy, Users, Vote, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +18,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { authClient, useSession } from "@/lib/auth-client";
 
-// Blank links: swap "#" for real routes when the pages exist.
 const LINKS = [
   { label: "Vote", href: "/vote", icon: Vote },
   { label: "Gallery", href: "#", icon: Images },
@@ -30,6 +30,7 @@ export default function Nav() {
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
+  const { data: session, isPending } = useSession();
 
   const { scrollY, scrollYProgress } = useScroll();
   const progress = useSpring(scrollYProgress, {
@@ -38,12 +39,15 @@ export default function Nav() {
     restDelta: 0.001,
   });
 
-  // Hide on scroll down, reveal on scroll up.
   useMotionValueEvent(scrollY, "change", (latest) => {
     const prev = scrollY.getPrevious() ?? 0;
     setScrolled(latest > 24);
     setHidden(latest > prev && latest > 240);
   });
+
+  const handleSignOut = async () => {
+    await authClient.signOut();
+  };
 
   return (
     <motion.header
@@ -61,7 +65,6 @@ export default function Nav() {
             : "border-white/10 bg-white/[0.03]",
         ].join(" ")}
       >
-        {/* Logo */}
         <Link href="/" className="group flex items-center gap-2 pl-1">
           <span className="grid size-8 place-items-center border border-white/20 bg-white/5 transition-colors group-hover:bg-white group-hover:text-black">
             <Trophy className="size-4" />
@@ -71,7 +74,6 @@ export default function Nav() {
           </span>
         </Link>
 
-        {/* Desktop links */}
         <ul
           className="hidden items-center gap-1 md:flex"
           onMouseLeave={() => setHovered(null)}
@@ -96,15 +98,35 @@ export default function Nav() {
           ))}
         </ul>
 
-        {/* CTA + mobile menu */}
         <div className="flex items-center gap-2">
-          <Button
-            size="sm"
-            render={<Link href="/vote" />}
-            className="hidden rounded-none bg-white font-mono text-xs font-semibold uppercase tracking-[0.2em] text-black hover:bg-emerald-300 md:inline-flex"
-          >
-            Cast your vote
-          </Button>
+          {!isPending && session?.user ? (
+            <>
+              <Link
+                href="/vote"
+                className="hidden rounded-none bg-white px-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-black hover:bg-emerald-300 md:inline-flex"
+              >
+                Cast your vote 
+              </Link>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSignOut}
+                className="hidden md:inline-flex gap-1.5 text-white/70 hover:text-white"
+              >
+                <LogOut className="size-3.5" />
+                <span className="font-mono text-xs uppercase tracking-[0.2em]">Logout</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link
+                href="/vote"
+                className="hidden rounded-none bg-white px-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-black hover:bg-emerald-300 md:inline-flex"
+              >
+                Cast your vote
+              </Link>
+            </>
+          )}
 
           <Sheet>
             <SheetTrigger
@@ -119,10 +141,7 @@ export default function Nav() {
             >
               <Menu className="size-5" />
             </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="w-[80vw] max-w-sm border-white/10 bg-black/90 text-white backdrop-blur-xl"
-            >
+            <SheetContent side="right" className="w-[80vw] max-w-sm border-white/10 bg-black/90 text-white backdrop-blur-xl">
               <SheetTitle className="sr-only">Menu</SheetTitle>
               <div className="mt-10 flex flex-col gap-2 px-2">
                 {LINKS.map(({ label, href, icon: Icon }, i) => (
@@ -144,12 +163,47 @@ export default function Nav() {
                     </span>
                   </SheetClose>
                 ))}
+
+                {!isPending && session?.user ? (
+                  <>
+                    <div className="border-t border-white/10 my-2 pt-2" />
+                    <SheetClose
+                      render={
+                        <button
+                          onClick={handleSignOut}
+                          className="group w-full flex items-center justify-between border border-white/10 px-4 py-5 transition-colors hover:bg-white hover:text-black"
+                        />
+                      }
+                    >
+                      <span className="flex items-center gap-3 text-xl font-black uppercase tracking-tight">
+                        <LogOut className="size-5" />
+                        Logout
+                      </span>
+                    </SheetClose>
+                  </>
+                ) : (
+                  <SheetClose
+                    render={
+                      <Link
+                        href="/signin"
+                        className="group flex items-center justify-between border border-white/10 px-4 py-5 transition-colors hover:bg-white hover:text-black"
+                      />
+                    }
+                  >
+                    <span className="flex items-center gap-3 text-xl font-black uppercase tracking-tight">
+                      <User className="size-5" />
+                      Sign In
+                    </span>
+                    <span className="font-mono text-xs opacity-50">
+                      04
+                    </span>
+                  </SheetClose>
+                )}
               </div>
             </SheetContent>
           </Sheet>
         </div>
 
-        {/* Scroll progress line */}
         <motion.span
           style={{ scaleX: progress }}
           className="absolute inset-x-0 bottom-0 h-px origin-left bg-gradient-to-r from-emerald-300 via-cyan-300 to-fuchsia-400"

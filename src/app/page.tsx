@@ -27,7 +27,6 @@ import {
 } from "lucide-react";
 
 import Nav from "@/components/Nav";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 /* -------------------------------------------------------------------------- */
