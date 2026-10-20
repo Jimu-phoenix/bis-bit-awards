@@ -3,7 +3,7 @@ import { getPool } from "@/lib/db";
 export async function GET() {
   const pool = getPool();
   const { rows } = await pool.query(`
-    SELECT c.id as category_id, c.slug, c.title,
+    SELECT c.id as category_id, c.slug, c.title, c.blurb as category_blurb,
            json_agg(
              json_build_object(
                'id', n.id,

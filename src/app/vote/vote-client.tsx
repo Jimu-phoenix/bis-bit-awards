@@ -34,6 +34,7 @@ interface VoteTotals {
   category_id: string;
   slug: string;
   title: string;
+  category_blurb: string;
   nominees: Array<{
     id: string;
     name: string;
@@ -307,6 +308,9 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
                     <h2 className="text-2xl font-black uppercase leading-none tracking-tight text-white md:text-3xl">
                       {category.title}
                     </h2>
+                    {category.category_blurb && (
+                      <p className="mt-1 text-sm text-white/50 italic">{category.category_blurb}</p>
+                    )}
                     <p className="mt-2 text-sm leading-relaxed text-white/55">
                       {list.length === 0 ? "Nominations not open yet" : list.length + " nominees"}
                     </p>

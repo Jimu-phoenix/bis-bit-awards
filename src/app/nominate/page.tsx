@@ -6,6 +6,7 @@ import { getVotingOpen } from "@/lib/voting";
 import { getSession } from "@/lib/auth-server";
 import Nav from "@/components/Nav";
 import { submitNomination } from "@/app/actions";
+import CategorySelector from "./category-selector";
 
 export const metadata: Metadata = {
   title: "Nominate — Finale Awards",
@@ -87,30 +88,7 @@ export default async function NominatePage({
             </p>
 
             <form action={submitNomination} className="mt-10 space-y-6">
-
-              <div>
-                <label
-                  htmlFor="category"
-                  className="block font-mono text-xs uppercase tracking-[0.3em] text-emerald-300 mb-2"
-                >
-                  Category
-                </label>
-                <select
-                  name="categoryId"
-                  id="category"
-                  required
-                  className="w-full rounded-none border border-white/20 bg-black/40 px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-emerald-300 focus:bg-black/60"
-                >
-                  <option value="" disabled selected>
-                    Select a category
-                  </option>
-                  {categories.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.title}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <CategorySelector categories={categories} />
 
               <div>
                 <label
