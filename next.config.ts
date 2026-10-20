@@ -10,6 +10,10 @@ const nextConfig: NextConfig = {
         loaders: ["@tailwindcss/turbopack"],
         as: "*.css",
       },
+      "*.svg": {
+        condition: { query: "?raw" },
+        type: "text",
+      },
     },
   },
 };

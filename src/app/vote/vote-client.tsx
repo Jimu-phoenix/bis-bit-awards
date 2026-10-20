@@ -222,7 +222,7 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
         <footer className="border-t border-white/10 px-6 py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 md:flex-row">
             <span>Finale Awards · BIS / BIT Class of 2026</span>
-            <span>Vote · production branch</span>
+            <span>Vote</span>
           </div>
         </footer>
       </main>
@@ -383,7 +383,7 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
       <footer className="border-t border-white/10 px-6 py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 md:flex-row">
           <span>Finale Awards · BIS / BIT Class of 2026</span>
-          <span>Vote · production branch</span>
+          <span>Vote</span>
         </div>
       </footer>
 

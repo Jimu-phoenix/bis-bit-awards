@@ -9,6 +9,39 @@ import { dangerButtonClass } from "./ui";
 
 const emptySubscribe = () => () => {};
 
+const PRINT_STYLES = `
+@page {
+  size: A4 landscape;
+  margin: 0;
+}
+.certificate-print-sheet {
+  display: none;
+}
+@media print {
+  body:has(.certificate-print-sheet[data-certificate-print="active"]) > *:not(.certificate-print-sheet) {
+    display: none !important;
+  }
+  .certificate-print-sheet[data-certificate-print="active"] {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    background: white;
+  }
+  .certificate-print-sheet[data-certificate-print="active"] .certificate {
+    width: 297mm;
+    height: 210mm;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  .certificate-print-sheet[data-certificate-print="active"] .certificate svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}
+`;
+
 export function PrintWinnerButton({
   categoryTitle,
   winnerName,
@@ -74,6 +107,8 @@ export function PrintWinnerButton({
 
   return (
     <>
+      <style>{PRINT_STYLES}</style>
+
       <button
         type="button"
         onClick={handlePrint}
@@ -96,7 +131,7 @@ export function PrintWinnerButton({
             className="certificate-print-sheet"
             aria-hidden
           >
-            <Certificate recipient={winnerName || "{winner.name}"} category={categoryTitle} />
+            <Certificate recipient={winnerName || "Full.Name"} category={categoryTitle} />
           </div>,
           document.body
         )}
