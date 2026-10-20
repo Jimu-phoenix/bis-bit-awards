@@ -76,7 +76,9 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
 
         const data: VoteTotals[] = await totalsRes.json();
         if (!active) return;
-        setCategories(data);
+        setCategories(
+          (data ?? []).map((c) => ({ ...c, nominees: c.nominees ?? [] })),
+        );
 
         if (userRes.ok) {
           const userData: Array<{ category_id: string; nominee_id: string }> | null =
@@ -265,7 +267,7 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
         )}
 
         <div className="mt-8 font-mono text-xs uppercase tracking-[0.3em] text-white/40">
-          {categories.length} categories · {categories.reduce((sum, c) => sum + c.nominees.length, 0)} nominees
+          {categories.length} categories · {categories.reduce((sum, c) => sum + (c.nominees?.length ?? 0), 0)} nominees
         </div>
 
         <div className="mt-10 flex flex-col gap-4">
