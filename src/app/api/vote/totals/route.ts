@@ -9,7 +9,8 @@ export async function GET() {
                'id', n.id,
                'name', n.name,
                'blurb', n.blurb,
-               'votes', COALESCE(v.cnt, 0)
+               'votes', COALESCE(v.cnt, 0),
+               'seed', COALESCE(n.seed, 0)
              ) ORDER BY n.sort_order, n.id
            ) FILTER (WHERE n.id IS NOT NULL) AS nominees
     FROM categories c

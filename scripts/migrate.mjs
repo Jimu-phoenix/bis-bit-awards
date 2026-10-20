@@ -131,6 +131,12 @@ try {
   `));
   console.log("Created certificates table");
 
+  // Add seed column to nominees table
+  await withRetry(() => client.query(`
+    ALTER TABLE nominees ADD COLUMN IF NOT EXISTS seed int NOT NULL DEFAULT 0
+  `));
+  console.log("Added seed column to nominees table");
+
   // Create system_logs table (admin action audit trail)
   await withRetry(() => client.query(`
     CREATE TABLE IF NOT EXISTS system_logs (

@@ -31,7 +31,8 @@ create table if not exists nominees (
   category_id bigint not null references categories (id) on delete cascade,
   name text not null,
   blurb text not null default '',
-  sort_order int not null default 0
+  sort_order int not null default 0,
+  seed int not null default 0
 );
 
 create table if not exists votes (

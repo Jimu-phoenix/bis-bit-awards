@@ -39,6 +39,7 @@ interface VoteTotals {
     name: string;
     blurb: string;
     votes: number;
+    seed: number;
   }>;
 }
 
@@ -218,6 +219,15 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
             <Lock className="size-4" />
             Voting period closed
           </div>
+
+          <div className="mt-10">
+            <a
+              href="/nominate"
+              className="inline-flex items-center gap-2 rounded-none bg-white px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-black hover:bg-emerald-300 transition-colors"
+            >
+              Nominate
+            </a>
+          </div>
         </section>
         <footer className="border-t border-white/10 px-6 py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 md:flex-row">
@@ -273,7 +283,9 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
         <div className="mt-10 flex flex-col gap-4">
           {categories.map((category, i) => {
             const Icon = ICONS[category.slug] ?? Award;
-            const list = category.nominees;
+            const list = [...category.nominees]
+              .sort((a, b) => (b.seed ?? 0) - (a.seed ?? 0))
+              .slice(0, 5);
 
             return (
               <article
@@ -332,6 +344,9 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
                                 {nominee.blurb}
                               </p>
                             )}
+                            <p className="mt-2 flex items-center gap-2 text-xs text-white/40">
+                              <span className="font-mono">seed: {nominee.seed ?? 0}</span>
+                            </p>
                           </div>
                           <div className="flex items-center gap-3">
                             {userVotes[category.category_id] ? (
