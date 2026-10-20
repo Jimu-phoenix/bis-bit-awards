@@ -6,6 +6,8 @@ import { getPool } from "@/lib/db";
 import { requireAdminUser } from "@/lib/admin";
 import { logAdminAction } from "@/lib/audit";
 import { setVotingOpen } from "@/lib/voting";
+import { issueCertificate } from "@/lib/certificates";
+import { verifyUrlFor, qrSvgAt, QR_BOX } from "@/lib/qr";
 
 function text(formData: FormData, key: string) {
   return String(formData.get(key) ?? "").trim();
@@ -263,4 +265,37 @@ export async function revokeAdmin(formData: FormData) {
 
   await logAdminAction(user.email, "admin.revoke", `Revoked dashboard access from ${email}`);
   done("/admin/users", `Revoked dashboard access from ${email}`);
+}
+
+/**
+ * Issue (or reuse) a certificate for the winning nominee of a category and
+ * return its verification code + QR-ready URL. Called from the admin "Print
+ * winner" button before the certificate is rendered and printed.
+ */
+export async function createCertificate(input: {
+  nomineeId: string;
+  categoryId: string;
+  nomineeName: string;
+  categoryTitle: string;
+}): Promise<{ code: string; verifyUrl: string; qrMarkup: string }> {
+  const user = await requireAdminUser();
+
+  const certificate = await issueCertificate({
+    nomineeId: input.nomineeId,
+    categoryId: input.categoryId,
+    nomineeName: input.nomineeName,
+    categoryTitle: input.categoryTitle,
+    createdBy: user.email,
+  });
+
+  await logAdminAction(
+    user.email,
+    "certificate.issue",
+    `Issued certificate ${certificate.code} for "${certificate.nominee_name}" (${certificate.category_title})`
+  );
+
+  const verifyUrl = verifyUrlFor(certificate.code);
+  const qrMarkup = await qrSvgAt(verifyUrl, QR_BOX);
+
+  return { code: certificate.code, verifyUrl, qrMarkup };
 }

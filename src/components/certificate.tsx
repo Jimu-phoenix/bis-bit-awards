@@ -12,22 +12,32 @@ function escapeXml(value: string): string {
 export default function Certificate({
   recipient = "Full.Name",
   category = "Award Title",
+  verifyCode = "bisbit26-xxxxx",
+  qrMarkup = "",
 }: {
   recipient?: string;
   category?: string;
+  verifyCode?: string;
+  qrMarkup?: string;
 }) {
   const markup = svgSource
     .replace(/(<text id="award-title"[^>]*>)[^<]*(<\/text>)/, `$1${escapeXml(category)}$2`)
     .replace(
       /(<text id="winner-name"[^>]*>)Winner: [^<]*(<\/text>)/,
       `$1Winner: ${escapeXml(recipient)}$2`,
-    );
+    )
+    .replace(
+      /(<text id="verify-code"[^>]*>)[^<]*(<\/text>)/,
+      `$1${escapeXml(verifyCode)}$2`,
+    )
+    .replace("<!--QR_CODE-->", qrMarkup);
 
   return (
     <div
       className="certificate"
-      // The SVG is a trusted, build-time asset; only the two editable text
-      // nodes are swapped, and the injected values are XML-escaped above.
+      // The SVG is a trusted, build-time asset; only the editable text nodes
+      // and the generated QR are swapped, and the injected values are
+      // XML-escaped above.
       dangerouslySetInnerHTML={{ __html: markup }}
     />
   );

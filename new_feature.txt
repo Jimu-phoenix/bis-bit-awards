@@ -1,0 +1,8 @@
+Authenicated user should be able to nominate. On the /vote page, when voting is closed, add the 'nominate button' after the mesage.
+this should take users to a /nominate page (do not place it in the nav, only on the nominate page).
+on the nominate page, users can add a nominee based on pre-existing categories (cannot create categories, only admins can on their dash)
+add a seed field in the nominees table that counts how many times they've been seeded.
+if nominee.name.tolower().strip() [use similar action in js] already exists with the same category, display 'seed counted' and increment the seed count
+When voting is open, the nominees with the 5 highest seeds are displayed and the nominate page says 'cannot nominate when voting is open'
+ 
+

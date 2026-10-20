@@ -106,6 +106,37 @@ try {
   `));
   console.log("Created admins table");
 
+  // Issued award certificates (unique verification code per winning nominee)
+  await withRetry(() => client.query(`
+    CREATE TABLE IF NOT EXISTS certificates (
+      id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+      code text NOT NULL UNIQUE,
+      nominee_id bigint NOT NULL REFERENCES nominees (id) ON DELETE CASCADE,
+      category_id bigint NOT NULL REFERENCES categories (id) ON DELETE CASCADE,
+      nominee_name text NOT NULL,
+      category_title text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      created_by text NOT NULL DEFAULT ''
+    )
+  `));
+  await withRetry(() => client.query(`
+    CREATE INDEX IF NOT EXISTS certificates_code_idx ON certificates (code)
+  `));
+  await withRetry(() => client.query(`
+    CREATE INDEX IF NOT EXISTS certificates_nominee_id_idx ON certificates (nominee_id)
+  `));
+  await withRetry(() => client.query(`
+    CREATE UNIQUE INDEX IF NOT EXISTS certificates_nominee_category_unique
+    ON certificates (nominee_id, category_id)
+  `));
+  console.log("Created certificates table");
+
+  // Add seed column to nominees table
+  await withRetry(() => client.query(`
+    ALTER TABLE nominees ADD COLUMN IF NOT EXISTS seed int NOT NULL DEFAULT 0
+  `));
+  console.log("Added seed column to nominees table");
+
   // Create system_logs table (admin action audit trail)
   await withRetry(() => client.query(`
     CREATE TABLE IF NOT EXISTS system_logs (
@@ -235,6 +266,7 @@ try {
       (SELECT COUNT(*) FROM votes) as votes,
       (SELECT COUNT(*) FROM admins) as admins,
       (SELECT COUNT(*) FROM system_logs) as system_logs,
+      (SELECT COUNT(*) FROM certificates) as certificates,
       (SELECT voting_open FROM voting_settings) as voting_open
   `);
   console.log("Counts:", JSON.stringify(counts.rows[0]));

@@ -1418,4 +1418,13 @@
 </mask>
 <path d="M561.5 640L597.44 660.75V702.25L561.5 723L525.56 702.25V660.75L561.5 640Z" stroke-width="3" stroke="#D4AF37" mask="url(#stroke1_0_1)"/>
 </g>
+
+<!-- Verification QR (injected at print time) -->
+<!-- Moved to top-right, right-aligned with the header divider (x=1045), just below it (y=83) -->
+<g id="verify-qr" transform="translate(75 -510)">
+<text id="verify-qr-label" x="925" y="616" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="9" letter-spacing="1.5" fill="#64748B">SCAN TO VERIFY</text>
+<rect id="verify-qr-frame" x="880" y="626" width="90" height="90" fill="#FFFFFF" stroke="#E2E8F0"/>
+<!--QR_CODE-->
+<text id="verify-code" x="925" y="733" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="9" fill="#64748B">bisbit26-xxxxx</text>
+</g>
 </svg>
