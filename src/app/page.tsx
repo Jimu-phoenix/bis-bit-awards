@@ -171,14 +171,15 @@ function Hero() {
     <section ref={ref} className="relative h-[140vh]">
       <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6">
         {/* Giant outlined year that slides sideways as you scroll.
-            Mobile: vertical, centred, filling the screen.
+            Mobile: vertical, centred, "20" on one line and "26" on the next.
             md+: upright, left-aligned, huge. */}
         <motion.span
           aria-hidden
           style={{ x: yearX, opacity: yearOpacity, WebkitTextStroke: "1px rgba(255,255,255,0.18)" }}
-          className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 select-none whitespace-nowrap text-[25vh] font-black leading-none tracking-tighter text-transparent [writing-mode:vertical-rl] md:left-[6vw] md:translate-x-0 md:text-[34vw] md:[writing-mode:horizontal-tb]"
+          className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 select-none flex-col items-center text-[25vh] font-black leading-none tracking-tighter text-transparent md:left-[6vw] md:translate-x-0 md:flex-row md:text-[34vw]"
         >
-          2026
+          <span className="[writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">20</span>
+          <span className="[writing-mode:vertical-rl] md:[writing-mode:horizontal-tb]">26</span>
         </motion.span>
 
         <motion.div
