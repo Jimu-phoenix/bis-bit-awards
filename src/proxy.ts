@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getPool } from "@/lib/db";
 import { SESSION_COOKIE, resolveSession } from "@/lib/session";
 
-const PUBLIC_ROUTES = ["/", "/api/vote/totals", "/api/auth", "/api/session"];
+const PUBLIC_ROUTES = ["/", "/verify", "/api/vote/totals", "/api/auth", "/api/session"];
 
 function isPublicRoute(pathname: string) {
   return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(route + "/"));
@@ -64,5 +64,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/vote/:path*", "/admin/:path*"],
+  matcher: ["/vote/:path*", "/admin/:path*", "/verify/:path*"],
 };

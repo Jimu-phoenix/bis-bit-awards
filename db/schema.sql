@@ -48,6 +48,25 @@ create table if not exists admins (
   fullname text not null default ''
 );
 
+-- Issued award certificates. Each row records a unique verification code tied
+-- to the winning nominee so a printed certificate can be validated via QR.
+create table if not exists certificates (
+  id bigint generated always as identity primary key,
+  code text not null unique,
+  nominee_id bigint not null references nominees (id) on delete cascade,
+  category_id bigint not null references categories (id) on delete cascade,
+  nominee_name text not null,
+  category_title text not null,
+  created_at timestamptz not null default now(),
+  created_by text not null default ''
+);
+
+create index if not exists certificates_code_idx on certificates (code);
+create index if not exists certificates_nominee_id_idx on certificates (nominee_id);
+-- One certificate per nominee per category
+create unique index if not exists certificates_nominee_category_unique
+  on certificates (nominee_id, category_id);
+
 create table if not exists system_logs (
   id bigint generated always as identity primary key,
   user_email text not null,

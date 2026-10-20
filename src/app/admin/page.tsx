@@ -109,6 +109,8 @@ export default async function AdminOverviewPage() {
                 </div>
                 <PrintWinnerButton
                   categoryTitle={category.title}
+                  categoryId={category.category_id}
+                  nomineeId={winner?.id ?? ""}
                   winnerName={winner?.name ?? ""}
                   votingOpen={votingOpen}
                   isTie={isTie}

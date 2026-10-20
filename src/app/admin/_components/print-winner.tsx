@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useTransition, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname } from "next/navigation";
-import { Printer } from "lucide-react";
+import { Loader2, Printer } from "lucide-react";
 import Certificate from "@/components/certificate";
+import { createCertificate } from "../actions";
 import { dangerButtonClass } from "./ui";
 
 const emptySubscribe = () => () => {};
@@ -42,14 +43,26 @@ const PRINT_STYLES = `
 }
 `;
 
+type Issued = { code: string; verifyUrl: string; qrMarkup: string };
+
+function nextFrame() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+  });
+}
+
 export function PrintWinnerButton({
   categoryTitle,
+  categoryId,
+  nomineeId,
   winnerName,
   votingOpen,
   isTie,
   disabled,
 }: {
   categoryTitle: string;
+  categoryId: string;
+  nomineeId: string;
   winnerName: string;
   votingOpen: boolean;
   isTie: boolean;
@@ -63,6 +76,9 @@ export function PrintWinnerButton({
     () => false
   );
   const [printing, setPrinting] = useState(false);
+  const [issued, setIssued] = useState<Issued | null>(null);
+  const [overlay, setOverlay] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
   const sheetRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
 
@@ -77,32 +93,38 @@ export function PrintWinnerButton({
         : `Print certificate for ${winnerName}`;
 
   const handlePrint = () => {
-    if (!canPrint) return;
+    if (!canPrint || pending) return;
 
-    const sheet = sheetRef.current;
-    if (!sheet) return;
+    setOverlay("Creating certificate id");
 
-    // Toggle the print flag synchronously and wait a frame so the attribute is
-    // committed to the DOM before the print dialog snapshots the page.
-    setPrinting(true);
+    startTransition(async () => {
+      let result: Issued;
+      try {
+        result = await createCertificate({ nomineeId, categoryId, nomineeName: winnerName, categoryTitle });
+      } catch {
+        setOverlay(null);
+        return;
+      }
 
-    const finish = () => {
-      setPrinting(false);
-      window.removeEventListener("afterprint", finish);
-    };
-    window.addEventListener("afterprint", finish);
+      setIssued(result);
+      setOverlay("Printing document");
 
-    let raf2 = 0;
-    const raf1 = requestAnimationFrame(() => {
-      raf2 = requestAnimationFrame(() => {
-        window.print();
-        // Safety net for browsers that never fire afterprint (e.g. some Safari).
-        setTimeout(finish, 1500);
-      });
+      // Let the certificate (with its QR) commit before the print snapshot.
+      await nextFrame();
+      setPrinting(true);
+      await nextFrame();
+
+      const finish = () => {
+        setPrinting(false);
+        setOverlay(null);
+        window.removeEventListener("afterprint", finish);
+      };
+      window.addEventListener("afterprint", finish);
+
+      window.print();
+      // Safety net for browsers that never fire afterprint (e.g. some Safari).
+      setTimeout(finish, 1500);
     });
-
-    void raf1;
-    void raf2;
   };
 
   return (
@@ -112,17 +134,32 @@ export function PrintWinnerButton({
       <button
         type="button"
         onClick={handlePrint}
-        disabled={!canPrint}
+        disabled={!canPrint || pending}
         title={label}
         aria-label={label}
         className={`${dangerButtonClass} shrink-0 disabled:cursor-not-allowed disabled:border-admin-border disabled:text-admin-muted disabled:hover:bg-transparent`}
       >
-        <Printer className="size-3.5" />
+        {pending ? <Loader2 className="size-3.5 animate-spin" /> : <Printer className="size-3.5" />}
         Print winner
       </button>
 
+      {overlay &&
+        mounted &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] grid place-items-center bg-black/70 backdrop-blur-sm">
+            <div className="flex flex-col items-center gap-4 border border-white/15 bg-black/80 px-10 py-8 text-center">
+              <Loader2 className="size-8 animate-spin text-emerald-300" />
+              <p className="font-mono text-xs uppercase tracking-[0.3em] text-white">
+                {overlay}
+              </p>
+            </div>
+          </div>,
+          document.body
+        )}
+
       {mounted &&
         canPrint &&
+        issued &&
         createPortal(
           <div
             ref={sheetRef}
@@ -131,7 +168,12 @@ export function PrintWinnerButton({
             className="certificate-print-sheet"
             aria-hidden
           >
-            <Certificate recipient={winnerName || "Full.Name"} category={categoryTitle} />
+            <Certificate
+              recipient={winnerName || "Full.Name"}
+              category={categoryTitle}
+              verifyCode={issued.code}
+              qrMarkup={issued.qrMarkup}
+            />
           </div>,
           document.body
         )}
