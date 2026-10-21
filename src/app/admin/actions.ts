@@ -129,16 +129,16 @@ export async function createNominee(formData: FormData) {
   const name = text(formData, "name");
   const categoryId = text(formData, "category_id");
   const blurb = text(formData, "blurb");
-  const sortOrder = number(formData, "sort_order");
+  const seed = number(formData, "seed");
 
   if (!name || !categoryId) {
     fail("/admin/nominees", "A nominee name and category are required");
   }
 
   const { rows } = await getPool().query<{ id: string }>(
-    `insert into nominees (category_id, name, blurb, sort_order)
+    `insert into nominees (category_id, name, blurb, seed)
      values ($1, $2, $3, $4) returning id`,
-    [categoryId, name, blurb, sortOrder]
+    [categoryId, name, blurb, seed]
   );
 
   await logAdminAction(
@@ -156,7 +156,7 @@ export async function updateNominee(formData: FormData) {
   const name = text(formData, "name");
   const categoryId = text(formData, "category_id");
   const blurb = text(formData, "blurb");
-  const sortOrder = number(formData, "sort_order");
+  const seed = number(formData, "seed");
 
   if (!id || !name || !categoryId) {
     fail("/admin/nominees", "A nominee name and category are required");
@@ -177,8 +177,8 @@ export async function updateNominee(formData: FormData) {
     }
 
     const { rowCount } = await client.query(
-      `update nominees set name = $1, category_id = $2, blurb = $3, sort_order = $4 where id = $5`,
-      [name, categoryId, blurb, sortOrder, id]
+      `update nominees set name = $1, category_id = $2, blurb = $3, seed = $4 where id = $5`,
+      [name, categoryId, blurb, seed, id]
     );
 
     if (rowCount === 0) {
