@@ -213,7 +213,7 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
             Voting period <span className="text-fuchsia-300">closed.</span>
           </h1>
           <p className="mt-6 max-w-xl text-white/60">
-            Ballots are locked for now. Winners are revealed on the day — check back when the
+            Ballots are locked for now. Winners are revealed on the day \u2014 check back when the
             voting period reopens.
           </p>
           <div className="mt-10 inline-flex items-center gap-3 border border-fuchsia-400/40 bg-fuchsia-400/5 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] text-fuchsia-300">
@@ -221,25 +221,20 @@ export function VoteClient({ sessionKey = "anonymous" }: { sessionKey?: string }
             Voting period closed
           </div>
 
-          <div className="mt-10">
-            <a
-              href="/nominate"
-              className="inline-flex items-center gap-2 rounded-none bg-white px-8 py-4 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-black hover:bg-emerald-300 transition-colors"
-            >
-              Nominate
-            </a>
+          <div className="mt-10 inline-flex items-center gap-3 border border-emerald-400/40 bg-emerald-400/5 px-4 py-3 font-mono text-xs uppercase tracking-[0.2em] text-emerald-300">
+            <Lock className="size-4" />
+            Nomination period closed
           </div>
         </section>
         <footer className="border-t border-white/10 px-6 py-10">
           <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 md:flex-row">
-            <span>Finale Awards · BIS / BIT Class of 2026</span>
+            <span>Finale Awards \u00B7 BIS / BIT Class of 2026</span>
             <span>Vote</span>
           </div>
         </footer>
       </main>
     );
   }
-
   return (
     <main className="relative min-h-screen overflow-x-clip bg-[#05060a] text-white selection:bg-emerald-300 selection:text-black">
       <div
