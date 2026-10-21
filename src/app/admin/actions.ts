@@ -129,16 +129,16 @@ export async function createNominee(formData: FormData) {
   const name = text(formData, "name");
   const categoryId = text(formData, "category_id");
   const blurb = text(formData, "blurb");
-  const sortOrder = number(formData, "sort_order");
+  const seed = number(formData, "seed");
 
   if (!name || !categoryId) {
     fail("/admin/nominees", "A nominee name and category are required");
   }
 
   const { rows } = await getPool().query<{ id: string }>(
-    `insert into nominees (category_id, name, blurb, sort_order)
+    `insert into nominees (category_id, name, blurb, seed)
      values ($1, $2, $3, $4) returning id`,
-    [categoryId, name, blurb, sortOrder]
+    [categoryId, name, blurb, seed]
   );
 
   await logAdminAction(
@@ -156,27 +156,53 @@ export async function updateNominee(formData: FormData) {
   const name = text(formData, "name");
   const categoryId = text(formData, "category_id");
   const blurb = text(formData, "blurb");
-  const sortOrder = number(formData, "sort_order");
+  const seed = number(formData, "seed");
 
   if (!id || !name || !categoryId) {
     fail("/admin/nominees", "A nominee name and category are required");
   }
 
-  const { rowCount } = await getPool().query(
-    `update nominees set name = $1, category_id = $2, blurb = $3, sort_order = $4 where id = $5`,
-    [name, categoryId, blurb, sortOrder, id]
-  );
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
 
-  if (rowCount === 0) {
-    fail("/admin/nominees", "Nominee not found");
+    // Check if another nominee with the same name exists in the category
+    const existing = await client.query<{ id: string }>(
+      `select id from nominees where category_id = $1 and lower(trim(name)) = lower($2) and id <> $3 limit 1`,
+      [categoryId, name, id]
+    );
+    if (existing.rows[0]) {
+      fail("/admin/nominees", "A nominee with this name already exists in this category");
+    }
+
+    const { rowCount } = await client.query(
+      `update nominees set name = $1, category_id = $2, blurb = $3, seed = $4 where id = $5`,
+      [name, categoryId, blurb, seed, id]
+    );
+
+    if (rowCount === 0) {
+      fail("/admin/nominees", "Nominee not found");
+    }
+
+    await client.query("COMMIT");
+
+    await logAdminAction(
+      user.email,
+      "nominee.update",
+      `Updated nominee #${id} to "${name}" (category #${categoryId})`
+    );
+    done("/admin/nominees", `Nominee "${name}" updated`);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    // Check for unique constraint violation (code 23505)
+    if ((error as { code?: string }).code === "23505") {
+      fail("/admin/nominees", "A nominee with this name already exists in this category");
+    }
+    throw error;
+  } finally {
+    client.release();
   }
-
-  await logAdminAction(
-    user.email,
-    "nominee.update",
-    `Updated nominee #${id} to "${name}" (category #${categoryId})`
-  );
-  done("/admin/nominees", `Nominee "${name}" updated`);
 }
 
 export async function deleteNominee(formData: FormData) {
