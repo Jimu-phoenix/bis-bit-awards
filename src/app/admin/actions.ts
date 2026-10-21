@@ -229,6 +229,80 @@ export async function deleteNominee(formData: FormData) {
   done("/admin/nominees", `Nominee "${rows[0].name}" deleted`);
 }
 
+export async function bulkUpdateNominees(formData: FormData) {
+  const user = await requireAdminUser();
+  const categoryId = text(formData, "category_id");
+  const nomineesJson = text(formData, "nominees");
+
+  if (!categoryId || !nomineesJson) {
+    fail("/admin/nominees", "Category and nominees data required");
+  }
+
+  let nominees: Array<{ id: string; name: string; blurb: string; seed: number; category_id: string }> = [];
+  try {
+    nominees = JSON.parse(nomineesJson);
+  } catch {
+    fail("/admin/nominees", "Invalid nominees data");
+  }
+
+  if (!Array.isArray(nominees) || nominees.length === 0) {
+    fail("/admin/nominees", "No nominees to update");
+  }
+
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    // Verify all nominees belong to the category and check for duplicates
+    for (const nominee of nominees) {
+      if (!nominee.id || !nominee.name || !nominee.category_id) {
+        fail("/admin/nominees", "Invalid nominee data");
+      }
+      if (nominee.category_id !== categoryId) {
+        fail("/admin/nominees", "Nominee category mismatch");
+      }
+
+      // Check for duplicate names within this category (excluding self)
+      const existing = await client.query<{ id: string }>(
+        `select id from nominees where category_id = $1 and lower(trim(name)) = lower($2) and id <> $3 limit 1`,
+        [categoryId, nominee.name, nominee.id]
+      );
+      if (existing.rows[0]) {
+        fail("/admin/nominees", `A nominee with the name "${nominee.name}" already exists in this category`);
+      }
+    }
+
+    // Bulk update
+    for (const nominee of nominees) {
+      const { rowCount } = await client.query(
+        `update nominees set name = $1, blurb = $2, seed = $3 where id = $4`,
+        [nominee.name, nominee.blurb ?? "", nominee.seed ?? 0, nominee.id]
+      );
+      if (rowCount === 0) {
+        fail("/admin/nominees", `Nominee #${nominee.id} not found`);
+      }
+    }
+
+    await client.query("COMMIT");
+
+    await logAdminAction(
+      user.email,
+      "nominee.bulk_update",
+      `Bulk updated ${nominees.length} nominees in category #${categoryId}`
+    );
+    done("/admin/nominees", `Saved ${nominees.length} nominees in category`);
+  } catch (error) {
+    await client.query("ROLLBACK");
+    if ((error as { code?: string }).code === "23505") {
+      fail("/admin/nominees", "A nominee with this name already exists in this category");
+    }
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function grantAdmin(formData: FormData) {
   const user = await requireAdminUser();
   const email = text(formData, "email").toLowerCase();
