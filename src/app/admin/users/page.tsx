@@ -1,5 +1,5 @@
 import { getPool } from "@/lib/db";
-import { grantAdmin, revokeAdmin } from "../actions";
+import { grantAdmin, revokeAdmin, deleteUser } from "../actions";
 import {
   Field,
   Notice,
@@ -156,13 +156,21 @@ export default async function AdminUsersPage({
                         </button>
                       </form>
                     ) : (
-                      <form action={grantAdmin}>
-                        <input type="hidden" name="email" value={user.email} />
-                        <input type="hidden" name="fullname" value="" />
-                        <button type="submit" className={primaryButtonClass}>
-                          Make admin
-                        </button>
-                      </form>
+                      <>
+                        <form action={grantAdmin}>
+                          <input type="hidden" name="email" value={user.email} />
+                          <input type="hidden" name="fullname" value="" />
+                          <button type="submit" className={primaryButtonClass}>
+                            Make admin
+                          </button>
+                        </form>
+                        <form action={deleteUser}>
+                          <input type="hidden" name="email" value={user.email} />
+                          <button type="submit" className={dangerButtonClass}>
+                            Delete user
+                          </button>
+                        </form>
+                      </>
                     )}
                   </td>
                 </tr>

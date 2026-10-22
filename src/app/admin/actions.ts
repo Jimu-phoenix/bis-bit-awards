@@ -366,6 +366,42 @@ export async function revokeAdmin(formData: FormData) {
   await logAdminAction(user.email, "admin.revoke", `Revoked dashboard access from ${email}`);
   done("/admin/users", `Revoked dashboard access from ${email}`);
 }
+export async function deleteUser(formData: FormData) {
+  const user = await requireAdminUser();
+  const email = text(formData, "email").toLowerCase();
+
+  if (!email) {
+    fail("/admin/users", "An email address is required");
+  }
+
+  if (email === user.email.toLowerCase()) {
+    fail("/admin/users", "You cannot delete your own account");
+  }
+
+  // Removing the dashboard-access row first; it matches users by email only,
+  // so an admin row may outlive the user otherwise.
+  await getPool().query("delete from admins where lower(trim(email)) = $1", [
+    email,
+  ]);
+
+  const { rowCount } = await getPool().query(
+    "delete from users where lower(trim(email)) = lower($1)",
+    [email]
+  );
+
+  if (rowCount === 0) {
+    fail("/admin/users", "User not found");
+  }
+
+  // votes.user_id and sessions.user_id reference users(id) on delete cascade,
+  // so the user's votes and sessions are removed automatically.
+  await logAdminAction(
+    user.email,
+    "user.delete",
+    `Deleted user ${email} and their votes`
+  );
+  done("/admin/users", `Deleted ${email} and their votes`);
+}
 
 /**
  * Issue (or reuse) a certificate for the winning nominee of a category and
