@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { getPool } from "@/lib/db";
+import { getHonoraryByCode } from "@/lib/honorary";
 
 const CODE_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -74,6 +75,8 @@ export async function issueCertificate({
 }
 
 export async function getCertificateByCode(code: string): Promise<Certificate | null> {
+  const honorary = getHonoraryByCode(code);
+  if (honorary) return honorary;
   const { rows } = await getPool().query<Certificate>(
     `select id, code, nominee_id, category_id, nominee_name, category_title, created_at
      from certificates
