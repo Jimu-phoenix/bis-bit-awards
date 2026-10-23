@@ -413,7 +413,7 @@ export async function createCertificate(input: {
   categoryId: string;
   nomineeName: string;
   categoryTitle: string;
-}): Promise<{ code: string; verifyUrl: string; qrMarkup: string }> {
+}): Promise<{ code: string; verifyUrl: string; qrMarkup: string; issuedAt: string }> {
   const user = await requireAdminUser();
 
   const certificate = await issueCertificate({
@@ -433,5 +433,10 @@ export async function createCertificate(input: {
   const verifyUrl = verifyUrlFor(certificate.code);
   const qrMarkup = await qrSvgAt(verifyUrl, QR_BOX);
 
-  return { code: certificate.code, verifyUrl, qrMarkup };
+  return {
+    code: certificate.code,
+    verifyUrl,
+    qrMarkup,
+    issuedAt: new Date(certificate.created_at).toISOString(),
+  };
 }

@@ -43,7 +43,7 @@ const PRINT_STYLES = `
 }
 `;
 
-type Issued = { code: string; verifyUrl: string; qrMarkup: string };
+type Issued = { code: string; verifyUrl: string; qrMarkup: string; issuedAt: string };
 
 function nextFrame() {
   return new Promise<void>((resolve) => {
@@ -173,6 +173,7 @@ export function PrintWinnerButton({
               category={categoryTitle}
               verifyCode={issued.code}
               qrMarkup={issued.qrMarkup}
+              issuedAt={issued.issuedAt}
             />
           </div>,
           document.body

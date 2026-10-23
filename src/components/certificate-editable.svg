@@ -1343,13 +1343,13 @@
 <circle cx="94.5" cy="61" r="3.5" fill="#E7D49B"/>
 <circle cx="107.5" cy="61" r="3.5" fill="#A1CDB3"/>
 </g>
-<text id="header-filename" x="126" y="64.5" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#64748B">certificate.tsx</text>
-<text id="header-label" x="1045" y="64.5" text-anchor="end" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="10" fill="#64748B">CLASS AWARDS / 2026</text>
+<text id="header-filename" x="126" y="64.5" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#1E293B">certificate.tsx</text>
+<text id="header-label" x="1045" y="64.5" text-anchor="end" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#1E293B">CLASS AWARDS / 2026</text>
 <rect id="header-divider" x="78" y="83" width="967" height="1" fill="#E2E8F0"/>
 
 <!-- Titles -->
 <text id="event-title" x="561.5" y="134" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="22" font-weight="400" fill="#0B1220">BIT &amp; BIS Class Awards 2026</text>
-<text id="tagline" x="562" y="178" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#64748B">// awarded with pride, BIT &amp; BIS 2026</text>
+<text id="tagline" x="562" y="178" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="14" fill="#1E293B">// awarded with pride, BIT &amp; BIS 2026</text>
 
 <!-- Trophy icon -->
 <g id="trophy-icon">
@@ -1371,7 +1371,7 @@
 <text id="certificate-heading" x="378.5" y="234" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="36" font-weight="700" letter-spacing="-0.5" fill="#0B1220">Certificate of recognition</text>
 
 <!-- Recipient -->
-<text id="presented-to" x="561.5" y="282" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="10" fill="#64748B">PRESENTED TO</text>
+<text id="presented-to" x="561.5" y="282" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#1E293B">PRESENTED TO</text>
 <text id="brace-left" x="235" y="356" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="72" fill="#059669">{</text>
 <text id="winner-name" x="561.5" y="356" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="54" font-weight="700" fill="#0B1220">Winner: Full.Name</text>
 <text id="brace-right" x="844" y="356" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="72" fill="#059669">}</text>
@@ -1380,10 +1380,10 @@
 
 <!-- Class pill -->
 <rect id="class-pill" x="492" y="411" width="139" height="30" rx="6" fill="#D1FAE5"/>
-<text id="class-label" x="561.5" y="430" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#059669">class: "BIT | BIS"</text>
+<text id="class-label" x="561.5" y="430" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#047857">class: "BIT | BIS"</text>
 
 <!-- Award -->
-<text id="recognised-as" x="561.5" y="490" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#64748B">Recognised as the winner of</text>
+<text id="recognised-as" x="561.5" y="490" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="16" fill="#1E293B">Recognised as the winner of</text>
 <text id="award-title" x="561.5" y="533" text-anchor="middle" font-family="Inter, 'Helvetica Neue', Arial, sans-serif" font-size="32" fill="#0B1220">Award Title</text>
 <g id="award-dots" clip-path="url(#clip7_0_1)">
 <rect x="542" y="550" width="5" height="5" fill="#D1FAE5"/>
@@ -1391,18 +1391,18 @@
 <rect x="562" y="550" width="5" height="5" fill="#7C3AED"/>
 <rect x="572" y="550" width="5" height="5" fill="#D1FAE5"/>
 </g>
-<text id="programme-1" x="561.5" y="588" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#64748B">BSc Information Technology</text>
-<text id="programme-2" x="561.5" y="609" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#64748B">BSc Management Information Systems</text>
+<text id="programme-1" x="561.5" y="588" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="14" fill="#1E293B">BSc Information Technology</text>
+<text id="programme-2" x="561.5" y="609" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="14" fill="#1E293B">BSc Management Information Systems</text>
 
 <!-- Signature (left) -->
-<rect id="signature-line" x="112" y="671" width="258" height="1" fill="#64748B"/>
-<text id="signature-label" x="112" y="694" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#0B1220">Award representative</text>
-<text id="signature-caption" x="112" y="718" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="9" fill="#64748B">Signature</text>
+<rect id="signature-line" x="112" y="671" width="258" height="1" fill="#1E293B"/>
+<text id="signature-label" x="112" y="694" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0B1220">Award representative</text>
+<text id="signature-caption" x="112" y="718" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#1E293B">Signature</text>
 
 <!-- Date (right) -->
-<text id="date-placeholder" x="753" y="659" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#64748B">DD / MM / YYYY</text>
-<rect id="date-line" x="753" y="674" width="258" height="1" fill="#64748B"/>
-<text id="date-label" x="753" y="697" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" fill="#0B1220">Date of presentation</text>
+<text id="date-placeholder" x="753" y="659" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0B1220">DD / MM / YYYY</text>
+<rect id="date-line" x="753" y="674" width="258" height="1" fill="#1E293B"/>
+<text id="date-label" x="753" y="697" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#0B1220">Date &amp; time issued</text>
 
 <!-- Seal -->
 <g id="seal" clip-path="url(#clip4_0_1)">
@@ -1422,9 +1422,9 @@
 <!-- Verification QR (injected at print time) -->
 <!-- Moved to top-right, right-aligned with the header divider (x=1045), just below it (y=83) -->
 <g id="verify-qr" transform="translate(75 -510)">
-<text id="verify-qr-label" x="925" y="616" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="9" letter-spacing="1.5" fill="#64748B">SCAN TO VERIFY</text>
+<text id="verify-qr-label" x="925" y="616" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="11" letter-spacing="1" fill="#1E293B">SCAN TO VERIFY</text>
 <rect id="verify-qr-frame" x="880" y="626" width="90" height="90" fill="#FFFFFF" stroke="#E2E8F0"/>
 <!--QR_CODE-->
-<text id="verify-code" x="925" y="733" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="9" fill="#64748B">bisbit26-xxxxx</text>
+<text id="verify-code" x="925" y="733" text-anchor="middle" font-family="'JetBrains Mono', 'Fira Code', ui-monospace, Menlo, Consolas, monospace" font-size="12" fill="#1E293B">bisbit26-xxxxx</text>
 </g>
 </svg>
